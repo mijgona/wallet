@@ -10,7 +10,7 @@ import (
 )
 func TestService_FindAccountByID_Success(t *testing.T) {
 	s := newTestService()
-	accounts, _, err := s.addAccount(defaultTestAccount)
+	accounts, _,_, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -32,7 +32,7 @@ func TestService_FindAccountByID_Success(t *testing.T) {
 
 func TestService_FindAccountByID_Fail(t *testing.T) {
 	s := newTestService()
-	_, _, err := s.addAccount(defaultTestAccount)
+	_, _, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -46,7 +46,7 @@ func TestService_FindAccountByID_Fail(t *testing.T) {
 
 func TestService_FindPaymenByID_success(t *testing.T) {
 	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	_, payments,_, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,7 +69,7 @@ func TestService_FindPaymenByID_success(t *testing.T) {
 
 func TestService_FindPaymentByID_Fail(t *testing.T) {
 	s := newTestService()
-	_, _, err := s.addAccount(defaultTestAccount)
+	_, _, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -88,7 +88,7 @@ func TestService_FindPaymentByID_Fail(t *testing.T) {
 }
 func TestService_Reject_success(t *testing.T) {
 	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	_, payments,_, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -123,7 +123,7 @@ func TestService_Reject_success(t *testing.T) {
 
 func TestService_Reject_Fail(t *testing.T) {
 	s := newTestService()
-	_, _, err := s.addAccount(defaultTestAccount)
+	_, _, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -146,7 +146,7 @@ func TestService_Reject_Fail(t *testing.T) {
 
 func TestService_Repeat_success(t *testing.T) {
 	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	_, payments, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -178,7 +178,7 @@ func TestService_Repeat_success(t *testing.T) {
 
 func TestService_Repeat_Fail(t *testing.T) {
 	s := newTestService()
-	_, _, err := s.addAccount(defaultTestAccount)
+	_, _, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error(err)
 		return
@@ -195,6 +195,39 @@ func TestService_Repeat_Fail(t *testing.T) {
 		t.Errorf("must return error, returned: %v", err)
 	}
 }
+
+func TestService_PayFromFavorite_success(t *testing.T) {
+	s := newTestService()
+	_, _, favorites, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	//try to Pay From Favorite
+	_, err = s.PayFromFavorite(favorites[0].ID)
+	if err != nil {
+		t.Errorf("PayFromFavorite(), Error: %v", err)
+		return
+	}
+
+}
+
+
+func TestService_PayFromFavorite_fail(t *testing.T) {
+	s := newTestService()
+	_, _, _, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = s.PayFromFavorite(uuid.New().String())
+	if err == nil {
+		t.Error("PayFromFavorite() must be Error")
+		return
+	}
+}
+
 
 type testService struct{
 	*Service
@@ -224,17 +257,17 @@ var defaultTestAccount = testAccount{
 	},
 }
 
-func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error)  {
+func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, []*types.Favorite, error)  {
 	//reg new account
 	account, err:=s.RegisterAccount(data.phone)
 	if err != nil{
-		return nil, nil, fmt.Errorf("can't register account, error: %v", err)
+		return nil, nil, nil, fmt.Errorf("can't register account, error: %v", err)
 	}
 
 	//deposit to account
 	err = s.Deposit(account.ID, data.balance)
 	if err != nil{
-		return nil, nil, fmt.Errorf("can't deposit to account, error: %v", err)
+		return nil, nil,nil, fmt.Errorf("can't deposit to account, error: %v", err)
 	}
 
 	//Make payments
@@ -242,8 +275,19 @@ func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Pay
 	for i, payment := range data.payments {
 		payments[i],err=s.Pay(account.ID, payment.amount, payment.category)
 		if err != nil {
-			return nil, nil, fmt.Errorf("can't make payment, error: %v", err)
+			return nil, nil,nil, fmt.Errorf("can't make payment, error: %v", err)
 		}
 	}
-	return account, payments, nil
+
+	//make favorites
+	var favorites []*types.Favorite
+	var fav *types.Favorite
+	for _, payment := range payments {	
+	fav, err=s.FavoritePayment(payment.ID, "Favorite") 
+	if err != nil {
+		return nil, nil,nil, fmt.Errorf("can't make favorite, error: %v", err)
+	}
+	favorites=append(favorites,fav)
+}
+	return account, payments, favorites, nil
 }
