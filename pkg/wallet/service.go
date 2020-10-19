@@ -103,3 +103,32 @@ func (s *Service) FindAccountByID(accountID int64) (*types.Account, error) {
 	}
 	return nil, ErrAccountNotFound
 }
+
+// FindPaymentByID ищем платёж по ID
+func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
+	for _, payment := range s.payments {
+		if payment.ID == paymentID {
+			return payment, nil
+		}
+	}
+	return nil, ErrPaymentNotFound
+}
+
+
+
+func (s *Service) Reject(paymentID string) error {
+	pay, err := s.FindPaymentByID(paymentID)
+	if err != nil {
+		return err
+	}
+
+	acc, err := s.FindAccountByID(pay.AccountID)
+	if err != nil {
+		return err
+	}
+
+	pay.Status = types.StatusFail
+	acc.Balance += pay.Amount
+
+	return nil
+}
