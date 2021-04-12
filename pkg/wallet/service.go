@@ -104,6 +104,7 @@ func (s *Service) FindAccountByID(accountID int64) (*types.Account, error)  {
 	return account,nil
 }
 
+//FindPaymentByID ишет платёж по ID
 func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error)  {
 	var payment *types.Payment
 	for _, pay := range s.payments {
@@ -118,6 +119,7 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error)  {
 	return payment,nil
 }
 
+//Reject отменяет заданный платёж, если его статус INPROGRESS
 func (s *Service) Reject(paymentID string) error  {
 	payment, err :=s.FindPaymentByID(paymentID)
 	if err!= nil{
@@ -134,3 +136,19 @@ func (s *Service) Reject(paymentID string) error  {
 	return nil
 }
 
+//Repeat Повторяет заданный платёж
+func (s *Service) Repeat(paymentID string) (*types.Payment, error)  {
+	//Находим платёж
+	payment, err :=s.FindPaymentByID(paymentID)
+	if err!= nil{
+		return nil,err
+	}
+
+	//Добавляем платёж повторно в сервис
+	newPayment,err :=s.Pay(payment.AccountID,payment.Amount,payment.Category)
+	if err!= nil{
+		return nil,err
+	}
+	
+	return newPayment, nil
+}

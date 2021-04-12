@@ -141,15 +141,40 @@ func TestService_Reject_success(t *testing.T) {
 }
 
 func TestService_Reject_Fail(t *testing.T) {
+	//Создаём сервис
 	svc:=&Service{}
 	_,err := svc.FindPaymentByID("payment.ID")
 	if err==nil{
 		t.Error("Должна быть ошибка платёж не найден")
 		return
 	}
+	//пробуем отменить несуществующий платёж
 	err=svc.Reject("payment.ID")
 	if err==nil{
 		t.Error("Должна быть ошибка платёж не найден")
 		return
 	}
+}
+
+func TestService_Repeat_success(t *testing.T) {
+	//Создаём сервис
+	s:=newTestService()
+	_, payments, err :=s.addAccount(defaultTestAccount)
+	if err!=nil {
+		t.Error(err)
+		return
+	}
+	//Пробуем повторить платёж
+	payment:=payments[0]
+	newPayment, err := s.Repeat(payment.ID)
+	if err!=nil {
+		t.Errorf("Repeat: err=%v",err)
+		return
+	}
+	//Сравниваем платежи
+	if reflect.DeepEqual(payment, newPayment){
+		t.Errorf("can`t find payment by ID: wrong payment returned=%v",err)
+		return
+	}
+	
 }
