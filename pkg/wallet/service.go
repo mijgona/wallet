@@ -202,6 +202,6 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	}
 
 	//совершаем платёж
-	payment,err:=s.Repeat(favorite.ID)
+	payment,err:=s.Pay(favorite.AccountID, favorite.Amount,favorite.Category)
 	return payment,err
 }
