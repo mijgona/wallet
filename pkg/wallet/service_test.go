@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-
 	"github.com/google/uuid"
 	"github.com/mijgona/wallet/pkg/types"
 )
@@ -21,6 +20,9 @@ import (
 		 amount		types.Money
 		 category	types.PaymentCategory
 	 }
+	 favorites [] struct {
+		 name 		string		
+	 }
  }
 
  //Данные тестового аккаунта
@@ -28,11 +30,19 @@ import (
  	phone:    "+992990999099",
  	balance:  10_000_00,
  	payments: []struct{
-		 amount types.Money
-		 category types.PaymentCategory
-		 }{
-			 {amount: 1_000_00, category: "auto" },
-		 },
+			amount types.Money
+			category types.PaymentCategory
+		}{
+				{amount: 1_000_00, category: "auto" },			 
+			},
+		favorites: []struct{
+			name 		string
+		}{
+			{
+				name: "audi",
+			},
+		},
+	
  }
 
  //Функция конструктор
@@ -41,16 +51,16 @@ import (
  }
 
  //Создаём аккаунт для тестирования
-func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error)  {
+func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, []*types.Favorite, error)  {
  //Регистрируем пользователя
  account, err := s.RegisterAccount(data.phone)
 	if err !=nil {
-		return nil, nil, fmt.Errorf("can`t register account, error=%v", err)
+		return nil, nil, nil, fmt.Errorf("can`t register account, error=%v", err)
 	}
 //Пополняет его счет
 err=s.Deposit(account.ID,data.balance)
 	if err!=nil{
-		return nil, nil, fmt.Errorf("can`t deposit account, error=%v", err)
+		return nil, nil, nil, fmt.Errorf("can`t deposit account, error=%v", err)
 	}
 
 //выполняем платежи
@@ -60,16 +70,26 @@ payments := make([]*types.Payment, len(data.payments))
 	 //Работаем через индекс
 	 payments[i], err = s.Pay(account.ID, payment.amount, payment.category)
 	 	if err!=nil{
-		return nil, nil, fmt.Errorf("can`t make payment, error=%v", err)
+		return nil, nil, nil, fmt.Errorf("can`t make payment, error=%v", err)
 	}
  }
-return account, payments, nil
+
+ //делаем из платежа избранное
+favorites:=make([]*types.Favorite, len(data.favorites))
+ for i, favorite := range data.favorites {
+	 //Работаем через индекс
+	 favorites[i], err = s.FavoritePayment(payments[0].ID, favorite.name)
+	 	if err!=nil{
+		return nil, nil, nil, fmt.Errorf("can`t make favorite, error=%v", err)
+	}
+ }
+return account, payments, favorites, nil
 }
 
 func TestService_FindPaymentByID_success(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
-	_,payments, err :=s.addAccount(defaultTestAccount)
+	_,payments,_, err :=s.addAccount(defaultTestAccount)
 	if err!=nil {
 		t.Error(err)
 		return
@@ -90,7 +110,7 @@ func TestService_FindPaymentByID_success(t *testing.T) {
 func TestService_FindPaymentByID_fail(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
-	_, _, err :=s.addAccount(defaultTestAccount)
+	_, _, _, err :=s.addAccount(defaultTestAccount)
 	if err!=nil {
 		t.Error(err)
 		return
@@ -110,7 +130,7 @@ func TestService_FindPaymentByID_fail(t *testing.T) {
 func TestService_Reject_success(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
-	_, payments, err :=s.addAccount(defaultTestAccount)
+	_, payments, _, err :=s.addAccount(defaultTestAccount)
 	if err!=nil {
 		t.Error(err)
 		return
@@ -159,7 +179,7 @@ func TestService_Reject_Fail(t *testing.T) {
 func TestService_Repeat_success(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
-	_, payments, err :=s.addAccount(defaultTestAccount)
+	_, payments,_, err :=s.addAccount(defaultTestAccount)
 	if err!=nil {
 		t.Error(err)
 		return
@@ -175,6 +195,33 @@ func TestService_Repeat_success(t *testing.T) {
 	if !(pay.AccountID==got.AccountID&&pay.Amount==got.Amount&&pay.Category==got.Category&&pay.Status==got.Status){
 		t.Errorf("can`t find payment by ID: wrong payment returned=%v",err)
 		return
+	}	
+}
+
+func TestService_FavoritePayment_success(t *testing.T) {
+	//Создаём сервис
+	s:=newTestService()
+	_, _,favorites, err :=s.addAccount(defaultTestAccount)
+	if err!=nil {
+		t.Error(err)
+		return
 	}
-	
+	//совершаем платёж из избранного
+	fav:=favorites[0]
+	got, err:=s.PayFromFavorite(fav.ID)
+	if err!=nil {
+		t.Error(err)
+		return
+	}
+	//находим первоначальный плтёж
+	pay, err:= s.FindPaymentByID(fav.ID)
+	if err!=nil {
+		t.Error(err)
+		return
+	}
+	//Сравниваем платежи
+	if !(pay.AccountID==got.AccountID&&pay.Amount==got.Amount&&pay.Category==got.Category&&pay.Status==got.Status){
+		t.Errorf("FavoritePayment: can`t find payment by ID: wrong payment returned=%v",err)
+		return
+	}	
 }

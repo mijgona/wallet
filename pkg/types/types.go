@@ -1,4 +1,5 @@
 package types
+
 //Money представляет собой денежную сумму в минимальных единицах(центы, дирамы, копейки) и т.д.
 type Money int64
 
@@ -32,4 +33,12 @@ type Account struct{
 	ID			int64
 	Phone		Phone
 	Balance		Money
+}
+
+type Favorite struct{
+	ID			string
+	AccountID	int64
+	Name		string
+	Amount		Money
+	Category	PaymentCategory
 }
