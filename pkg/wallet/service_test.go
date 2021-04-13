@@ -66,7 +66,7 @@ payments := make([]*types.Payment, len(data.payments))
 return account, payments, nil
 }
 
-func TestService_FindAccountByID_success(t *testing.T) {
+func TestService_FindPaymentByID_success(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
 	_,payments, err :=s.addAccount(defaultTestAccount)
@@ -82,12 +82,12 @@ func TestService_FindAccountByID_success(t *testing.T) {
 		return
 	}
 	//Сравниваем платежи
-	if reflect.DeepEqual(payment, got){
+	if !reflect.DeepEqual(payment, got){
 		t.Errorf("can`t find payment by ID: wrong payment returned=%v",err)
 		return
 	}
 }
-func TestService_FindAccountByID_fail(t *testing.T) {
+func TestService_FindPaymentByID_fail(t *testing.T) {
 	//Создаём сервис
 	s:=newTestService()
 	_, _, err :=s.addAccount(defaultTestAccount)
@@ -165,14 +165,14 @@ func TestService_Repeat_success(t *testing.T) {
 		return
 	}
 	//Пробуем повторить платёж
-	payment:=payments[0]
-	newPayment, err := s.Repeat(payment.ID)
+	pay:=payments[0]
+	got, err := s.Repeat(pay.ID)
 	if err!=nil {
 		t.Errorf("Repeat: err=%v",err)
 		return
 	}
 	//Сравниваем платежи
-	if reflect.DeepEqual(payment, newPayment){
+	if !(pay.AccountID==got.AccountID&&pay.Amount==got.Amount&&pay.Category==got.Category&&pay.Status==got.Status){
 		t.Errorf("can`t find payment by ID: wrong payment returned=%v",err)
 		return
 	}
