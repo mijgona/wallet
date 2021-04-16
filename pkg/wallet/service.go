@@ -2,9 +2,12 @@ package wallet
 
 import (
 	"errors"
-
 	"github.com/google/uuid"
 	"github.com/mijgona/wallet/pkg/types"
+	"log"
+	"os"
+	"strings"
+	"strconv"
 )
 
 var ErrPhoneRegistered = errors.New("Phone already Registered")
@@ -204,4 +207,72 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	//совершаем платёж
 	payment,err:=s.Pay(favorite.AccountID, favorite.Amount,favorite.Category)
 	return payment,err
+}
+
+func (s *Service) ExportToFile(path string) error  {
+	file, err :=os.Create(path)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		err := file.Close()
+		if err!=nil {
+			log.Print(err)
+		}
+	}()
+	for _, account := range s.accounts {
+		acc := strconv.FormatInt(account.ID,10)+";"+string(account.Phone)+";"+strconv.Itoa(int(account.Balance))+"|"
+		_, err = file.Write([]byte(acc))
+		if err!= nil {
+			log.Print(err)
+			return err
+		}
+	}
+
+
+	return nil
+}
+
+func (s *Service) ImportFromFile(path string) error  {
+	file, err :=os.Open(path)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		err := file.Close()
+		if err!=nil {
+			log.Print(err)
+		}
+	}()
+	content :=make([]byte,0)
+	buf := make([]byte, 4)
+	for {
+	read, err := file.Read(buf)
+		if err!= nil {
+			break
+		}
+		content = append(content, buf[:read]...)
+	}
+	all:= strings.Split(string(content), "|")
+	var phone string
+	var id int64
+	var balance int64
+	acc:=all
+	for _, str := range all {
+		if str!=""{
+		log.Println(str)
+		acc = strings.Split(str,";")
+		id,err=strconv.ParseInt(acc[0], 10, 64)
+		phone =acc[1]
+		balance,err =strconv.ParseInt(acc[2], 10, 64)
+	
+		account := &types.Account{
+		ID:      id,
+		Phone:   types.Phone(phone),
+		Balance: types.Money(balance),
+		}
+		s.accounts = append(s.accounts, account)
+		}
+	}
+	return nil
 }
