@@ -42,7 +42,6 @@ import (
 				name: "audi",
 			},
 		},
-	
  }
 
  //Функция конструктор
@@ -157,7 +156,6 @@ func TestService_Reject_success(t *testing.T) {
 		t.Errorf("Reject: balance didn`t changed Account=%v",savedAccount)
 		return
 	}
-	
 }
 
 func TestService_Reject_Fail(t *testing.T) {
@@ -213,4 +211,26 @@ func TestService_FavoritePayment_success(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+
+func TestService_Export_success(t *testing.T) {
+//Создаём сервис
+s:=newTestService()
+_, _,_, err :=s.addAccount(defaultTestAccount)
+		
+err = s.Export("../../data")
+if err != nil {
+	t.Errorf("Невозможно выполнить экспорт, ошибка=%v",err)
+}
+}
+func TestService_Import_success(t *testing.T) {
+//Создаём сервис
+s:=newTestService()
+
+//импортируем
+err:=s.Import("../../data")
+if err != nil {
+	t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
+}	
 }
