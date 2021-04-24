@@ -1,13 +1,17 @@
 package wallet
 
 import (
+	"bufio"
 	"errors"
-	"github.com/google/uuid"
-	"github.com/mijgona/wallet/pkg/types"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
+	"reflect"
+	"github.com/google/uuid"
+	"github.com/mijgona/wallet/pkg/types"
 )
 
 var ErrPhoneRegistered = errors.New("Phone already Registered")
@@ -181,7 +185,7 @@ func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorit
 	return favorite,nil
 }
 
-//Находит избранное по ID
+//FindFavoriteByID Находит избранное по ID
 func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite, error) {
 	var favorite *types.Favorite
 	for _, fav := range s.favorites {
@@ -196,7 +200,7 @@ func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite, error) {
 	return favorite,nil
 }
 
-//Совершает платёж из конкретного избранного
+//PayFromFavorite Совершает платёж из конкретного избранного
 func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	//Находим избранное
 	favorite, err :=s.FindFavoriteByID(favoriteID)
@@ -209,6 +213,7 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	return payment,err
 }
 
+//ExportToFile экспортирует аккаунты в файл
 func (s *Service) ExportToFile(path string) error  {
 	file, err :=os.Create(path)
 	if err!=nil {
@@ -232,8 +237,9 @@ func (s *Service) ExportToFile(path string) error  {
 
 	return nil
 }
-
+//ImportFromFile импортирует аккаунты из файла
 func (s *Service) ImportFromFile(path string) error  {
+//открываем файл
 	file, err :=os.Open(path)
 	if err!=nil {
 		return err
@@ -244,6 +250,7 @@ func (s *Service) ImportFromFile(path string) error  {
 			log.Print(err)
 		}
 	}()
+//Читаем содержимое
 	content :=make([]byte,0)
 	buf := make([]byte, 4)
 	for {
@@ -253,6 +260,7 @@ func (s *Service) ImportFromFile(path string) error  {
 		}
 		content = append(content, buf[:read]...)
 	}
+//сортируем содержимое полей и обновляем сервис
 	all:= strings.Split(string(content), "|")
 	var phone string
 	var id int64
@@ -275,4 +283,194 @@ func (s *Service) ImportFromFile(path string) error  {
 		}
 	}
 	return nil
+}
+
+//Export экспортирует все данные в файл
+func (s *Service) Export(dir string) error {
+	var acc string
+	var pay string
+	var fav string
+//определяем путь
+	accDir:=dir+"/accounts.dump"
+	payDir:=dir+"/payments.dump"
+	favDir:=dir+"/favorites.dump"
+
+//Записываем аккаунты
+	for _, account := range s.accounts {
+		acc+=strconv.FormatInt(account.ID,10)+";"+string(account.Phone)+";"+strconv.Itoa(int(account.Balance))+"\n"
+	}
+	err:=ioutil.WriteFile(accDir,[]byte(acc),0666)
+	if err!=nil {
+		return err
+	}
+
+//Записываем платежи
+	for _, payment := range s.payments {
+		pay+= string(payment.ID) + ";" +  strconv.FormatInt(payment.AccountID,10) + ";" + strconv.Itoa(int(payment.Amount)) + ";" +  string(payment.Category) + ";" +  string(payment.Status)+"\n"
+	}
+	err=ioutil.WriteFile(payDir,[]byte(pay),0666)
+	if err!=nil {
+		return err
+	}
+
+//записываем избранные платежи
+	for _, favorite := range s.favorites {
+		fav+= string(favorite.ID) + ";" + strconv.FormatInt(favorite.AccountID,10) + ";" + string(favorite.Name) +  ";" + strconv.Itoa(int(favorite.Amount)) +  ";" + string(favorite.Category)+"\n"
+	}
+	err=ioutil.WriteFile(favDir,[]byte(fav),0666)
+	if err!=nil {
+		return err
+	}
+	return nil
+}
+
+//Import импортирует все данные из файла
+func (s *Service) Import(dir string) error {
+	pathToAccount :=dir + "/accounts.dump"
+	pathToPayment:= dir+ "/payments.dump"
+	pathToFavorite := dir+"/favorites.dump"
+
+	//открываем файл
+	srcAccount, err :=os.Open(pathToAccount)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		cerr := srcAccount.Close()
+		if cerr!=nil {
+			log.Print(err)
+		}
+	}()
+//Читаем содержимое файла аккаутов
+	reader:= bufio.NewReader(srcAccount)
+	for {
+
+			line, err :=reader.ReadString('\n')
+			if err==io.EOF{
+				log.Print(line)
+				break
+			}
+			if err!=nil {
+				return err
+			}
+			line=strings.ReplaceAll(line,"\n","")
+			line=strings.ReplaceAll(line,"\r","")
+			accLine := strings.Split(line,";")
+			id,err:=strconv.ParseInt(accLine[0], 10, 64)
+			if err!=nil {
+				return err
+			}
+			phone :=accLine[1]
+			balance,err :=strconv.ParseInt(accLine[2], 10, 64)
+			if err!=nil {
+				return err
+			}
+			account := &types.Account{
+				ID:      id,
+				Phone:   types.Phone(phone),
+				Balance: types.Money(balance),
+			}
+			gotAccount,err:=s.FindAccountByID(account.ID)
+			if !reflect.DeepEqual(account, gotAccount){
+				s.accounts = append(s.accounts, account)
+				s.nextAccountID= s.accounts[len(s.accounts)-1].ID
+			}
+		}
+
+//Читаем содержимое файла платежей
+srcPayment, err :=os.Open(pathToPayment)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		cerr := srcPayment.Close()
+		if cerr!=nil {
+			log.Print(err)
+		}
+	}()
+	reader =bufio.NewReader(srcPayment)
+	for {
+		line, err :=reader.ReadString('\n')
+		if err==io.EOF{
+			break
+		}
+		if err!=nil {
+			return err
+		}	
+		line=strings.ReplaceAll(line,"\n","")
+		line=strings.ReplaceAll(line,"\r","")
+		payLine := strings.Split(line,";")
+		id:=payLine[0]
+		accountID,err :=strconv.ParseInt(payLine[1],10,64)
+		if err!=nil {
+			return err
+		}
+		amount,err :=strconv.ParseInt(payLine[2], 10, 64)
+		category := payLine[3]
+		status := payLine[4]
+		if err!=nil {
+			return err
+		}
+		payment := &types.Payment{
+			ID:      	id,
+			AccountID:	accountID,
+			Amount:  	types.Money(amount),
+			Category:	types.PaymentCategory(category),
+			Status:		types.PaymentStatus(status),
+		}
+		
+		gotPayment,err:=s.FindPaymentByID(payment.ID)
+		if !reflect.DeepEqual(payment, gotPayment){
+			s.payments = append(s.payments, payment)
+		}
+	}
+
+	//Читаем содержимое файла избранных
+
+	srcFavorite, err :=os.Open(pathToFavorite)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		cerr := srcFavorite.Close()
+		if cerr!=nil {
+			log.Print(err)
+		}
+	}()
+		reader =bufio.NewReader(srcFavorite)
+	for {
+		line, err :=reader.ReadString('\n')		
+		line=strings.ReplaceAll(line,"\n","")
+		line=strings.ReplaceAll(line,"\r","")
+		if err==io.EOF{
+			break
+		}
+		favLine := strings.Split(line,";")
+		id:=favLine[0]
+		accountID,err :=strconv.ParseInt(favLine[1],10,64)
+		if err!=nil {
+			return err
+		}
+		name :=favLine[2]
+		amount,err :=strconv.ParseInt(favLine[3], 10, 64)
+		category := favLine[4]
+		if err!=nil {
+			return err
+		}
+		favorite := &types.Favorite{
+			ID:      	id,
+			AccountID:	accountID,
+			Name:		name,
+			Amount:  	types.Money(amount),
+			Category:	types.PaymentCategory(category),
+		}
+				
+		gotFavorite,err:=s.FindFavoriteByID(favorite.ID)
+		if !reflect.DeepEqual(favorite, gotFavorite){
+			s.favorites = append(s.favorites, favorite)
+		}
+	}
+
+
+return nil
 }
