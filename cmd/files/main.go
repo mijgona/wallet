@@ -1,34 +1,21 @@
 package main
 
 import (
-	"github.com/mijgona/wallet/pkg/wallet"
+	// "github.com/mijgona/wallet/pkg/wallet"
 	//"github.com/mijgona/wallet/pkg/types"
 	"log"
+	"time"
 )
 
 
 func main() {
-	var s wallet.Service
-	_, err:=s.RegisterAccount("+992925996655")
-	if err != nil{
-		 log.Println(err)
-	}
-	_, err =s.RegisterAccount("+992900000000")
-	if err != nil{
-		 log.Println(err)
-	}
+	log.Print("main started")
 
-	err=s.Deposit(1,10_000_00)
-	if err!=nil{
-		log.Printf("can`t deposit account, error= %v", err)
-	}
+	go func ()  {
+		log.Print("goroutines")
+	}()
 
-	_, err = s.Pay(1, 200, "auto")
+	log.Print("main finished")
 
-
-	err = s.Export("../../data")
-	if err != nil {
-		return
-	}
-	
+	time.Sleep(time.Second *5)
 }
