@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
+	"sync"
 	"github.com/google/uuid"
 	"github.com/mijgona/wallet/pkg/types"
 )
@@ -413,3 +413,51 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 	
 	return nil
 }
+// SumPayments Суммирует платежи распределяя их по горутинам
+func (s *Service) SumPayments(goroutines int) types.Money  {
+	sumPayments :=types.Money(0)
+	if s.payments!=nil&&goroutines<=1{
+		for _, payment := range s.payments {
+			sumPayments += payment.Amount
+		}
+	}else{
+
+		
+		paymentsCount:=len(s.payments)//общее число платежей		
+		paymentsFor := make([]int, goroutines, goroutines)
+		n:=paymentsCount/goroutines
+		l:=paymentsCount%goroutines
+		d:=0
+		for i := 0; i < goroutines; i++ {
+			if l==0{
+				d=d+n
+				paymentsFor[i]=d
+			}else{
+				d=d+n+1
+				paymentsFor[i]=d
+				l-=1
+			}
+		}		
+			
+			mu:=sync.Mutex{}
+			wg:=sync.WaitGroup{}			
+			wg.Add((paymentsCount + goroutines - 1) / goroutines)
+			prevPayment:=0	
+
+			for _, currentPayment := range paymentsFor {
+				go func(payments []*types.Payment) {
+					defer wg.Done()
+					var sum types.Money = 0
+					for _, payment := range payments {
+						sum += payment.Amount
+					}
+					mu.Lock()
+					sumPayments += sum
+					mu.Unlock()
+				}(s.payments[prevPayment:currentPayment])
+				prevPayment=currentPayment
+			}
+			wg.Wait()
+		}
+	return sumPayments
+	}

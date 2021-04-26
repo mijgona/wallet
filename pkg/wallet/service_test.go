@@ -2,8 +2,10 @@ package wallet
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
+
 	"github.com/google/uuid"
 	"github.com/mijgona/wallet/pkg/types"
 )
@@ -259,4 +261,13 @@ func TestService_History_success(t *testing.T) {
 		t.Errorf("Невозможно записать историю в файл, ошибка=%v",err)
 	}
 	
+	}
+
+	func TestService_SumPayments_success(t *testing.T) {
+		s := newTestService()
+		dir:="../../data"
+		s.Import(dir)
+		sum:= s.SumPayments(5)
+		log.Print(sum)
+		
 	}
