@@ -352,15 +352,19 @@ func (s *Service) Import(dir string) error {
 }
 
 func (s *Service) ExportAccountHistory(accountID int64) ([]types.Payment, error) {
+	var found []types.Payment
 	if s.payments!=nil{
-		var found []types.Payment
-		for _, payment := range s.payments {
-			if payment.AccountID==accountID{
-				found=append(found,*payment)
+		for _, account := range s.accounts {
+			if accountID==account.ID{
+				for _, payment := range s.payments {
+					if payment.AccountID==accountID{
+						found=append(found,*payment)
+					}
+				}
+				return found,nil
 			}
-		}
-		return found,nil
-		}
+		}		
+	}
 		return nil, ErrAccountNotFound
 }
 	
@@ -371,6 +375,7 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 		nextFile :=records
 		currentFile:=1
 		fileName:=1
+		
 		for _, payment := range payments {
 			if len(payments)<=records {
 				pathToPayment := dir+"/payments.dump"
@@ -406,5 +411,5 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 		return nil
 	}
 	
-	return ErrPaymentNotFound
+	return nil
 }
