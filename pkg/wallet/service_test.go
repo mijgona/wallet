@@ -217,7 +217,13 @@ func TestService_FavoritePayment_success(t *testing.T) {
 func TestService_Export_success(t *testing.T) {
 //Создаём сервис
 s:=newTestService()
+
+//импортируем
 _, _,_, err :=s.addAccount(defaultTestAccount)
+err=s.Import("../../data")
+if err != nil {
+	t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
+}	
 		
 err = s.Export("../../data")
 if err != nil {
@@ -234,3 +240,23 @@ if err != nil {
 	t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
 }	
 }
+
+func TestService_History_success(t *testing.T) {
+	//Создаём сервис
+	s:=newTestService()	
+	_, _,_, err :=s.addAccount(defaultTestAccount)
+	err=s.Import("../../data")
+	if err != nil {
+		t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
+	}	
+	payment, err :=s.ExportAccountHistory(1)
+	if err != nil {
+		t.Errorf("Невозможно выполнить Экспорт', ошибка=%v",err)
+	}
+	
+	err=s.HistoryToFiles(payment, "../../data/payments",3)
+	if err != nil {
+		t.Errorf("Невозможно записать историю в файл, ошибка=%v",err)
+	}
+	
+	}
