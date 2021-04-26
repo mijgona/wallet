@@ -222,7 +222,7 @@ s:=newTestService()
 
 //импортируем
 _, _,_, err :=s.addAccount(defaultTestAccount)
-err=s.Import("../../data")
+// err=s.Import("../../data")
 if err != nil {
 	t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
 }	
@@ -270,4 +270,20 @@ func TestService_History_success(t *testing.T) {
 		sum:= s.SumPayments(5)
 		log.Print(sum)
 		
+	}
+
+	func BenchmarkSumPayments(b *testing.B) {
+		s := newTestService()
+		dir:="../../data"
+		s.Import(dir)
+		want := types.Money(100000)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			result :=s.SumPayments(55)
+			b.StopTimer()
+			if result!=want {
+				b.Fatalf("invalid result, got %v, want %v", result, want)
+			}
+			b.StartTimer()			
+		}
 	}

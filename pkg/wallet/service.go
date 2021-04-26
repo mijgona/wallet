@@ -425,6 +425,7 @@ func (s *Service) SumPayments(goroutines int) types.Money  {
 		
 		paymentsCount:=len(s.payments)//общее число платежей		
 		paymentsFor := make([]int, goroutines, goroutines)
+
 		n:=paymentsCount/goroutines
 		l:=paymentsCount%goroutines
 		d:=0
@@ -441,7 +442,7 @@ func (s *Service) SumPayments(goroutines int) types.Money  {
 			
 			mu:=sync.Mutex{}
 			wg:=sync.WaitGroup{}			
-			wg.Add((paymentsCount + goroutines - 1) / goroutines)
+			wg.Add(goroutines)
 			prevPayment:=0	
 
 			for _, currentPayment := range paymentsFor {
