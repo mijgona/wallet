@@ -462,3 +462,65 @@ func (s *Service) SumPayments(goroutines int) types.Money  {
 		}
 	return sumPayments
 	}
+
+
+	//FindPaymentByID ишет платёж по ID
+func (s *Service) FindPaymentsByID(accountID int64) ([]types.Payment, error)  {
+	var payment []types.Payment
+	for _, pay := range s.payments {
+		if pay.AccountID==accountID{
+			payment = append(payment, *pay)
+		}
+	}
+	return payment,nil
+}
+	func (s *Service) FilterPayments(accountID int64, goroutines int)([]types.Payment, error)  {
+		var accPayments []types.Payment
+		if s.payments!=nil&&goroutines<=1{
+			for _, pay := range s.payments {
+				if pay.AccountID==accountID{
+					accPayments = append(accPayments, *pay)
+				}
+			}
+		}else{
+			paymentsCount:=len(s.payments)//общее число платежей		
+			paymentsFor := make([]int, goroutines, goroutines)
+	
+			n:=paymentsCount/goroutines
+			l:=paymentsCount%goroutines
+			d:=0
+			for i := 0; i < goroutines; i++ {
+				if l==0{
+					d=d+n
+					paymentsFor[i]=d
+				}else{
+					d=d+n+1
+					paymentsFor[i]=d
+					l-=1
+				}
+			}
+
+			mu:=sync.Mutex{}
+			wg:=sync.WaitGroup{}			
+			wg.Add(goroutines)
+			prevPayment:=0
+
+			for _, currentPayment := range paymentsFor {
+				go func(payments []*types.Payment) {
+					defer wg.Done()
+					var pay []types.Payment
+					for _, payment := range payments {
+						pay=append(pay, *payment)
+					}
+					mu.Lock()
+					for _, p := range pay {
+						accPayments = append(accPayments, p)
+					}					
+					mu.Unlock()
+				}(s.payments[prevPayment:currentPayment])
+				prevPayment=currentPayment
+			}
+			wg.Wait()
+		}
+		return accPayments, nil
+	}
