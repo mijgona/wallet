@@ -222,7 +222,7 @@ s:=newTestService()
 
 //импортируем
 _, _,_, err :=s.addAccount(defaultTestAccount)
-err=s.Import("../../data")
+// err=s.Import("../../data")
 if err != nil {
 	t.Errorf("Невозможно выполнить импорт, ошибка=%v",err)
 }	
@@ -297,7 +297,7 @@ func TestService_History_success(t *testing.T) {
 		for i := 0; i < b.N; i++ {
 			result,err :=s.FilterPayments(1,56)
 			if err != nil {
-				b.Fatalf("Невозможно записать историю в файл, ошибка=%v",err)
+				b.Fatalf("ошибка=%v",err)
 			}
 			b.StopTimer()
 				//Сравниваем платежи
@@ -333,3 +333,26 @@ func equal(a, b []types.Payment) bool {
     }
     return true
 }
+	func BenchmarkFilterPaymentsByFn(b *testing.B) {
+		s := newTestService()
+		dir:="../../data"
+		s.Import(dir)
+		want,_ := s.FindPaymentsByID(1)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			result,err :=s.FilterPaymentsByFn(func(payment types.Payment) bool {
+				return payment.AccountID == 1
+			},56)
+			if err != nil {
+				b.Fatalf("ошибка=%v",err)
+			}
+			b.StopTimer()
+				//Сравниваем платежи
+				l:=equal(want, result)
+			if !l{
+				b.Fatalf("can`t find payments: wrong payment returned=%v want=%v",result,want)
+				return
+			}
+			b.StartTimer()			
+		}
+	}
