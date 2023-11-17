@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{447A00AE-C9C0-4907-A70D-6F16B21769A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{8BA8108C-B3BE-4A8E-8736-D9CC0082B909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{20FC3344-D043-44EC-973F-7C85CABA2F7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic", "BusinessLogic\BusinessLogic.csproj", "{E18B1825-19AC-45AF-9798-1B7F43DA7A60}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BA8108C-B3BE-4A8E-8736-D9CC0082B909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BA8108C-B3BE-4A8E-8736-D9CC0082B909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BA8108C-B3BE-4A8E-8736-D9CC0082B909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BA8108C-B3BE-4A8E-8736-D9CC0082B909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20FC3344-D043-44EC-973F-7C85CABA2F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20FC3344-D043-44EC-973F-7C85CABA2F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20FC3344-D043-44EC-973F-7C85CABA2F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20FC3344-D043-44EC-973F-7C85CABA2F7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E18B1825-19AC-45AF-9798-1B7F43DA7A60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E18B1825-19AC-45AF-9798-1B7F43DA7A60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E18B1825-19AC-45AF-9798-1B7F43DA7A60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E18B1825-19AC-45AF-9798-1B7F43DA7A60}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8BA8108C-B3BE-4A8E-8736-D9CC0082B909} = {447A00AE-C9C0-4907-A70D-6F16B21769A3}
+		{20FC3344-D043-44EC-973F-7C85CABA2F7A} = {447A00AE-C9C0-4907-A70D-6F16B21769A3}
+		{E18B1825-19AC-45AF-9798-1B7F43DA7A60} = {447A00AE-C9C0-4907-A70D-6F16B21769A3}
+	EndGlobalSection
+EndGlobal
