@@ -17,4 +17,11 @@ public sealed class EfCoreWalletRepository : IWalletRepository
         if (res.Entity != null) return await _db.Wallet.FindAsync(res.Entity.Id, token);
         return new Wallet();
     }
+
+    public ValueTask<Wallet?> GetWalletByUserId(long userId, CancellationToken token = default)
+    {
+        var res = _db.Wallet
+            .FirstOrDefault(t => t.UserId == userId);
+        return ValueTask.FromResult(res);
+    }
 }

@@ -7,13 +7,15 @@ public static class UserExtension
     public static UserInfo ToUserInfo(this User client)
     {
         return new(
-            client.Id,
-            client.Name,
-            client.LastName,
-            client.MiddleName,
-            client.PhoneNumber,
-            client.PassportNumber,
-            client.Age,
-            client.Gender.ToString());
+            Id: client.Id,
+             UserName: client.UserName,
+            Password: client.Password,
+            FirstName: client.Name,
+            LastName: client.LastName,
+            MiddleName: client.MiddleName,
+            Phone: client.PhoneNumber,
+            PassportNumber: client.PassportNumber,
+            Age: client.Age,
+            Gender:  client.Gender.ToString());
     }
 }

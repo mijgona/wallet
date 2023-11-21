@@ -34,4 +34,18 @@ public sealed class TransactionService : ITransactionService
 
         return await _transactionRepository.GetTransactionsAsync(userId, default);;
     }
+
+    public async ValueTask<Transaction> ChangeTransactionStatusAsync(long transactionId, string sts, CancellationToken token)
+    {
+        var status = sts.ToTransactionStatusEnum();
+        var transaction = _transactionRepository.GetTransactionByIdAsync(transactionId, token).Result;
+
+        if (transaction.Status == status)
+        {
+            return transaction;
+        }
+        
+        return await _transactionRepository.UpdateStatusAsync(transaction, status, token);
+        
+    }
 }

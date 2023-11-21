@@ -28,35 +28,14 @@ public sealed class UserService : IUserService
 
         return await _userRepository.CreateAsync(newUser);;
     }
-
-    public bool RemoveUser(string firstName, string lastName)
-    {
-        // if (firstName is not { Length: > 0 })
-        //     throw new ArgumentNullException(nameof(firstName));
-        //
-        // if (lastName is not { Length: > 0 })
-        //     throw new ArgumentNullException(nameof(lastName));
-        //
-        // int userIndex = _userRepository.FindIndex(c => c.Name.Equals(firstName) && c.LastName.Equals(lastName));
-        // if (userIndex < 0)
-        //     return false;
-        //
-        // _users.RemoveAt(userIndex);
-
-        return true;
-    }
     
-    //
-    // public UserInfo GetUser(string firstName, string lastName)
-    // {
-    //     // if (firstName is not { Length: > 0 })
-    //     //     throw new ArgumentNullException(nameof(firstName));
-    //     //
-    //     // if (lastName is not { Length: > 0 })
-    //     //     throw new ArgumentNullException(nameof(lastName));
-    //     //
-    //     // User? user = _users.Find(c => c.Name.Equals(firstName) && c.LastName.Equals(lastName))
-    //     //     ?? throw new NotFoundException();
-    //     return _userRepository.ToUserInfo();
-    // }
+    
+    public async ValueTask<User> GetUserByUsername(string userName)
+    {
+        if (userName is not { Length: > 0 })
+            throw new ArgumentNullException(nameof(userName));
+
+        return await _userRepository.GetUserByUserName(userName, default);
+    }
+
 }

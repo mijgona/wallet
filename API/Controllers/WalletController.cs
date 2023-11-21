@@ -17,6 +17,7 @@ public class WalletController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] WalletInfo request)
     {
+        
         return Ok(_walletService.CreateWallet(request).Result);
     } 
 }

@@ -15,5 +15,11 @@ public sealed class EfCoreUserRepository : IUserRepository
         await _db.SaveChangesAsync(token);
         
         return await _db.Users.FindAsync(res.Entity.Id, token) ?? new User();
+    }    
+    
+    public async ValueTask<User> GetUserByUserName(string userName, CancellationToken token = default)
+    {
+        return await ValueTask.FromResult(_db.Users
+            .FirstOrDefault(t => t.UserName == userName) ?? throw new InvalidOperationException());
     }
 }

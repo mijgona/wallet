@@ -28,4 +28,11 @@ public class TransactionController : ControllerBase
         var res = await _transactionService.GetTransactionsAsync(userId, new CancellationToken());
         return Ok(res);
     }
+    
+    [HttpPut]
+    public async Task<IActionResult> ChangeTransactionStatus([FromHeader] string status, long transactionId)
+    {
+        var res = await _transactionService.ChangeTransactionStatusAsync(transactionId, status, new CancellationToken());
+        return Ok(res);
+    }
 }

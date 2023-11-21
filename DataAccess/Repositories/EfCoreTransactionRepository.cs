@@ -20,9 +20,14 @@ public sealed class EfCoreTransactionRepository : ITransactionRepository
         return _db.Transactions.Find(res.Entity.Id) ?? new Transaction();
     }
 
-    public ValueTask<bool> UpdateStatusAsync(Transaction transaction, string newStatus, CancellationToken token = default)
+    public async ValueTask<Transaction> UpdateStatusAsync(Transaction transaction, TransactionStatus newStatus,
+        CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        transaction.Status = newStatus;
+        var res =  _db.Transactions.Update(transaction);
+        await _db.SaveChangesAsync(token);
+        
+        return _db.Transactions.Find(res.Entity.Id) ?? new Transaction();
     }
 
     public async ValueTask<string> GetStatusAsync(long transactionId, CancellationToken token = default)
@@ -36,16 +41,22 @@ public sealed class EfCoreTransactionRepository : ITransactionRepository
             .FirstOrDefault().ToString() ;
     }
 
-    public ValueTask<List<Transaction>> GetTransactionsAsync(long userId, CancellationToken token = default)
+    public async ValueTask<List<Transaction>> GetTransactionsAsync(long userId, CancellationToken token = default)
     {
         var userTransactions = _db.Transactions
             .Where(t => t.SourceWallet != null && t.SourceWallet.UserId == userId)
             .ToList();
-        return ValueTask.FromResult(userTransactions);
+        return await ValueTask.FromResult(userTransactions);
     }
 
     public ValueTask<ulong> GetTransactionsCountAsync(string userId, CancellationToken token = default)
     {
         throw new NotImplementedException();
+    }
+
+    public  async ValueTask<Transaction> GetTransactionByIdAsync(long transactionId, CancellationToken token = default)
+    {
+        return await ValueTask.FromResult(_db.Transactions
+            .FirstOrDefault(t => t.Id == transactionId) ?? throw new InvalidOperationException());
     }
 }
