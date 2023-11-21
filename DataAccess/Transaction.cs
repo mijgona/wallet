@@ -2,10 +2,13 @@
 
 public sealed class Transaction
 {
-    public ulong Id { get; set; }
-    public WalletBalance TargetWallet { get; set; } = new WalletBalance();
-    public WalletBalance SourceWallet { get; set; } = new WalletBalance();
-    public TransactionStatus Status { get; set; }
+    public long Id { get; set; }
+    public long SourceWalletId { get; set; }
+    public long TargetWalletId { get; set; }
+    
+    public Wallet? SourceWallet { get; set; }
+    public Wallet? TargetWallet { get; set; }
+    public TransactionStatus Status { get; set; } = TransactionStatus.Pending;
     public TransactionType Type { get; set; }
-    public decimal Amount { get; set; }
+    public float Amount { get; set; }
 }

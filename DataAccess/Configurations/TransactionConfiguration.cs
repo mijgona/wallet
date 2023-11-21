@@ -9,22 +9,6 @@ public sealed class TransactionConfiguration: IEntityTypeConfiguration<Transacti
     {
         modelBuilder
             .HasKey(t => t.Id)
-            .HasName("pk_id");
-
-        modelBuilder
-            .Property(p => p.Id)
-            .HasColumnType("SERIAL")
-            .HasColumnName("id")
-            .IsRequired();
-
-        modelBuilder
-            .HasOne(p => p.SourceWallet)
-            .WithMany(w => w.Transactions);
-        
-        modelBuilder
-            .HasOne(p => p.TargetWallet)
-            .WithMany(w => w.Transactions);
-        
-        
+            .HasName("Tr_id");
     }
 }
