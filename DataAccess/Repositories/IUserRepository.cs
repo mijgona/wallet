@@ -2,7 +2,7 @@
 
 public interface IUserRepository
 {
-    ValueTask<User> CreateAsync(User user, CancellationToken token = default);
-    public ValueTask<User> GetUserByUserName(string userName, CancellationToken token = default);
+    public ValueTask<User> CreateAsync(User user, CancellationToken token);
+    public ValueTask<User> GetUserByUserName(string userName, CancellationToken token);
 
 }

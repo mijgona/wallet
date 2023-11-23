@@ -32,13 +32,10 @@ public sealed class EfCoreTransactionRepository : ITransactionRepository
 
     public async ValueTask<string> GetStatusAsync(long transactionId, CancellationToken token = default)
     {
-        var findAsync = await _db.Transactions.FindAsync(transactionId);
+        var findAsync = await _db.Transactions.FindAsync(transactionId, token);
         Debug.Assert(findAsync != null, nameof(findAsync) + " != null");
 
-        return _db.Transactions
-            .Where(t => t.Id == transactionId)
-            .Select(t => t.Status)
-            .FirstOrDefault().ToString() ;
+        return findAsync.Status.ToString();
     }
 
     public async ValueTask<List<Transaction>> GetTransactionsAsync(long userId, CancellationToken token = default)
@@ -49,9 +46,11 @@ public sealed class EfCoreTransactionRepository : ITransactionRepository
         return await ValueTask.FromResult(userTransactions);
     }
 
-    public ValueTask<ulong> GetTransactionsCountAsync(string userId, CancellationToken token = default)
+    public async ValueTask<ulong> GetTransactionsCountAsync(long userId, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var res = _db.Transactions
+            .Count(t => t.SourceWallet != null && t.SourceWallet.UserId == userId);
+        return (ulong)await ValueTask.FromResult(res);
     }
 
     public  async ValueTask<Transaction> GetTransactionByIdAsync(long transactionId, CancellationToken token = default)

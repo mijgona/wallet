@@ -4,5 +4,5 @@ namespace BusinessLogic;
 
 public interface IWalletService
 {
-    public Task<Wallet?> CreateWallet(WalletInfo userInfo);
+    public ValueTask<Wallet> CreateWalletAsync(WalletInfo userInfo, CancellationToken token);
 }

@@ -1,4 +1,5 @@
 ﻿using BusinessLogic;
+using DataAccess;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -17,7 +18,16 @@ public class WalletController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] WalletInfo request)
     {
+        Wallet res;
+        try
+        {
+            res = await _walletService.CreateWalletAsync(request, new CancellationToken());
+        }
+        catch (Exception e)
+        {
+            return Conflict(e);
+        }
         
-        return Ok(_walletService.CreateWallet(request).Result);
+        return  Ok(res);
     } 
 }

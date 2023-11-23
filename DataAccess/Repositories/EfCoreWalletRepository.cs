@@ -1,6 +1,8 @@
 ﻿namespace DataAccess.Repositories;
 
-public sealed class EfCoreWalletRepository : IWalletRepository
+public sealed class 
+    
+    EfCoreWalletRepository : IWalletRepository
 {
     private readonly WalletDbContext _db;
 
@@ -21,7 +23,7 @@ public sealed class EfCoreWalletRepository : IWalletRepository
     public ValueTask<Wallet?> GetWalletByUserId(long userId, CancellationToken token = default)
     {
         var res = _db.Wallet
-            .FirstOrDefault(t => t.UserId == userId);
+            .FirstOrDefault(t => t != null && t.UserId == userId);
         return ValueTask.FromResult(res);
     }
 }

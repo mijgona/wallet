@@ -31,8 +31,7 @@ public sealed class TransactionService : ITransactionService
     
     public async ValueTask<List<Transaction>> GetTransactionsAsync(long userId, CancellationToken token)
     {
-
-        return await _transactionRepository.GetTransactionsAsync(userId, default);;
+        return await _transactionRepository.GetTransactionsAsync(userId, token);;
     }
 
     public async ValueTask<Transaction> ChangeTransactionStatusAsync(long transactionId, string sts, CancellationToken token)

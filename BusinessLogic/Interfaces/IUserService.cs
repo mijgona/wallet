@@ -4,6 +4,6 @@ namespace BusinessLogic;
 
 public interface IUserService
 {
-    public Task<User> CreateUser(UserInfo userInfo);
-    public ValueTask<User> GetUserByUsername(string userName);
+    public ValueTask<User> CreateUserAsync(UserInfo userInfo, CancellationToken token);
+    public ValueTask<User> GetUserByUsernameAsync(string userName, CancellationToken token);
 }

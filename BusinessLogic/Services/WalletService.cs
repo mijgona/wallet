@@ -12,13 +12,13 @@ public class WalletService : IWalletService
         _walletRepository = walletRepository;
     }
 
-    public async Task<Wallet?> CreateWallet(WalletInfo walletInfo)
+    public async ValueTask<Wallet> CreateWalletAsync(WalletInfo walletInfo, CancellationToken token)
     {
         Wallet newWallet = new()
         {
             UserId = walletInfo.UserId,
             Balance = walletInfo.Balance
         };
-        return await _walletRepository.CreateAsync(newWallet);
+        return await _walletRepository.CreateAsync(newWallet, token) ?? throw new InvalidOperationException();
     }
 }

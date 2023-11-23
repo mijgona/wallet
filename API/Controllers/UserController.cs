@@ -1,4 +1,5 @@
 ﻿using BusinessLogic;
+using DataAccess;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -15,16 +16,34 @@ public class UserController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] UserInfo request)
+    public async ValueTask<IActionResult> Create([FromBody] UserInfo request)
     {
-        var res =_userService.CreateUser(request).Result;
+        User res;
+        try
+        {
+            res =await _userService.CreateUserAsync(request, new CancellationToken());
+
+        }
+        catch (Exception e)
+        {
+            return Conflict(e) ;
+        }
         return Ok(res);
     } 
     
     [HttpGet]
-    public async Task<IActionResult> GetUserByUsername([FromQuery] string username)
+    public async ValueTask<IActionResult> GetUserByUsername([FromQuery] string username)
     {
-        var res =_userService.GetUserByUsername(username);
+        User res;
+
+        try
+        {
+            res = await _userService.GetUserByUsernameAsync(username, new CancellationToken());
+        }
+        catch (Exception e)
+        {
+            return Conflict(e) ;
+        }
         return Ok(res);
     } 
 }

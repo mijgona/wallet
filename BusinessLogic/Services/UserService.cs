@@ -12,7 +12,7 @@ public sealed class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public async Task<User> CreateUser(UserInfo userInfo)
+    public async ValueTask<User> CreateUserAsync(UserInfo userInfo, CancellationToken token)
     {
         User newUser = new()
         {
@@ -26,16 +26,16 @@ public sealed class UserService : IUserService
             
         };
 
-        return await _userRepository.CreateAsync(newUser);;
+        return await _userRepository.CreateAsync(newUser, token);;
     }
     
     
-    public async ValueTask<User> GetUserByUsername(string userName)
+    public async ValueTask<User> GetUserByUsernameAsync(string userName, CancellationToken token)
     {
         if (userName is not { Length: > 0 })
             throw new ArgumentNullException(nameof(userName));
 
-        return await _userRepository.GetUserByUserName(userName, default);
+        return await _userRepository.GetUserByUserName(userName, token);
     }
 
 }
