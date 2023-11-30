@@ -1,5 +1,6 @@
 ﻿using BusinessLogic;
 using DataAccess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -31,6 +32,7 @@ public class UserController : ControllerBase
         return Ok(res);
     } 
     
+    [Authorize]
     [HttpGet]
     public async ValueTask<IActionResult> GetUserByUsername([FromQuery] string username)
     {

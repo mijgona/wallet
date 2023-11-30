@@ -6,4 +6,5 @@ public interface IUserService
 {
     public ValueTask<User> CreateUserAsync(UserInfo userInfo, CancellationToken token);
     public ValueTask<User> GetUserByUsernameAsync(string userName, CancellationToken token);
+    public ValueTask<User> GetUserByPhoneAndPasswordAsync(LoginRequest request, CancellationToken token);
 }

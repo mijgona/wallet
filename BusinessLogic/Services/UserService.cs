@@ -23,7 +23,7 @@ public sealed class UserService : IUserService
             PhoneNumber = userInfo.Phone,
             PassportNumber = userInfo.PassportNumber,
             Gender = userInfo.Gender.ToGenderEnum(),
-            
+            Password = userInfo.Password
         };
 
         return await _userRepository.CreateAsync(newUser, token);;
@@ -35,7 +35,16 @@ public sealed class UserService : IUserService
         if (userName is not { Length: > 0 })
             throw new ArgumentNullException(nameof(userName));
 
-        return await _userRepository.GetUserByUserName(userName, token);
+        return await _userRepository.GetUserByUserNameAsync(userName, token);
     }
 
+    public async ValueTask<User> GetUserByPhoneAndPasswordAsync(LoginRequest request, CancellationToken token)
+    {
+        if (request.PhoneNumber is not { Length: > 0 })
+            throw new ArgumentNullException(nameof(request.PhoneNumber));
+        if (request.Password is not { Length: > 0 })
+            throw new ArgumentNullException(nameof(request.Password));
+
+        return await _userRepository.GetUserByPhoneAndPassword(request.PhoneNumber, request.Password, token);
+    }
 }

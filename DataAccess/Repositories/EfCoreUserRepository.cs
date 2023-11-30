@@ -1,4 +1,7 @@
-﻿namespace DataAccess.Repositories;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
+
+namespace DataAccess.Repositories;
 
 public sealed class EfCoreUserRepository : IUserRepository
 {
@@ -17,9 +20,15 @@ public sealed class EfCoreUserRepository : IUserRepository
         return await _db.Users.FindAsync(res.Entity.Id, token) ?? new User();
     }    
     
-    public async ValueTask<User> GetUserByUserName(string userName, CancellationToken token = default)
+    public async ValueTask<User> GetUserByUserNameAsync(string userName, CancellationToken token = default)
     {
         return await ValueTask.FromResult(_db.Users
             .FirstOrDefault(t => t.UserName == userName) ?? throw new InvalidOperationException());
+    }
+
+    public async ValueTask<User> GetUserByPhoneAndPassword(string phoneNumber, string password, CancellationToken token)
+    {
+        return await ValueTask.FromResult(_db.Users
+            .FirstOrDefault(t => t.PhoneNumber == phoneNumber && t.Password == password) ?? throw new InvalidOperationException());
     }
 }

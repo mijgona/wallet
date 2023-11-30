@@ -1,14 +1,18 @@
-﻿namespace DataAccess.Repositories;
+﻿using Microsoft.Extensions.Logging;
+
+namespace DataAccess.Repositories;
 
 public sealed class 
     
     EfCoreWalletRepository : IWalletRepository
 {
     private readonly WalletDbContext _db;
+    private readonly ILogger<IWalletRepository> _logger;
 
-    public EfCoreWalletRepository(WalletDbContext walletDbContext)
+    public EfCoreWalletRepository(WalletDbContext walletDbContext, ILogger<IWalletRepository> logger)
     {
         _db = walletDbContext;
+        _logger = logger;
     }
     
     public async ValueTask<Wallet?> CreateAsync(Wallet? wallet, CancellationToken token = default)

@@ -13,3 +13,10 @@ public readonly record struct UserInfo(
     string Gender)
 {
 }
+
+public record struct LoginRequest(
+    
+    string PhoneNumber,
+    string Password)
+{
+}

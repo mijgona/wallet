@@ -10,7 +10,9 @@ public interface ITransactionRepository
         CancellationToken token = default);
 
     public ValueTask<string> GetStatusAsync(long transactionId, CancellationToken token = default);
-    public ValueTask<List<Transaction>> GetTransactionsAsync(long userId, CancellationToken token = default);
+    public ValueTask<List<Transaction>> GetUserTransactionsAsync(long userId, CancellationToken token = default);
+    public ValueTask<List<Transaction>> GetTransactionsAsync(CancellationToken token = default);
+    public ValueTask<List<Transaction>> GetTransactionsByStatusAsync(TransactionStatus s, CancellationToken token = default);
     public ValueTask<ulong> GetTransactionsCountAsync(long userId, CancellationToken token = default);
     public ValueTask<Transaction> GetTransactionByIdAsync(long transactionId, CancellationToken token = default);
 

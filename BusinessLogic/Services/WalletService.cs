@@ -21,4 +21,14 @@ public class WalletService : IWalletService
         };
         return await _walletRepository.CreateAsync(newWallet, token) ?? throw new InvalidOperationException();
     }
+
+    public async ValueTask<Wallet?> GetWalletByUserIdAsync(long userId, CancellationToken token)
+    {
+        if (userId > 0)
+        {
+            return  await _walletRepository.GetWalletByUserId(userId, token);
+        }
+
+        return new Wallet();
+    }
 }

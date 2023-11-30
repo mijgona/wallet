@@ -10,5 +10,9 @@ public sealed class UserConfiguration: IEntityTypeConfiguration<User>
         modelBuilder
             .HasKey(p => p.Id)
             .HasName("pk_id");
+
+        modelBuilder
+            .HasIndex(p => p.PhoneNumber)
+            .IsUnique();
     }
 }

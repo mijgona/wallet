@@ -1,5 +1,6 @@
 ﻿using BusinessLogic;
 using DataAccess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -16,6 +17,7 @@ public class TransactionController : ControllerBase
     }
     
     
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateTransaction([FromBody] TransactionInfo request)
     {
@@ -31,13 +33,30 @@ public class TransactionController : ControllerBase
         return Ok(res);
     }  
     
-    [HttpGet]
-    public async Task<IActionResult> GetTransactions([FromHeader] long userId)
+    [Authorize]
+    [HttpGet , Route("{userId}")]
+    public async Task<IActionResult> GetUsersTransactions([FromRoute] long userId)
     {
         List<Transaction> res;
         try
         {
-            res = await _transactionService.GetTransactionsAsync(userId, new CancellationToken());
+            res = await _transactionService.GetUserTransactionsAsync(userId, new CancellationToken());
+        }
+        catch (Exception e)
+        {
+            return Conflict(e) ;
+        }
+        return Ok(res);
+    }    
+    
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetTransactions()
+    {
+        List<Transaction> res;
+        try
+        {
+            res = await _transactionService.GetTransactionsAsync(new CancellationToken());
         }
         catch (Exception e)
         {
@@ -46,6 +65,7 @@ public class TransactionController : ControllerBase
         return Ok(res);
     }
     
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> ChangeTransactionStatus([FromHeader] string status, long transactionId)
     {
